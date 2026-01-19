@@ -9,13 +9,13 @@ const project = new GemeenteNijmegenTsPackage({
   npmTrustedPublishing: true,
   workflowBootstrapSteps: [
     {
-      name: 'Setup .npmrc for GitHub Packages',
-      run: 'echo "//npm.pkg.github.com/:_authToken=${{ secrets.VER_ID_GH_TOKEN }}" >> .npmrc',
+      name: 'Setup GitHub Packages auth',
+      env: {
+        VER_ID_GH_TOKEN: '${{ secrets.VER_ID_GH_TOKEN }}',
+      },
+      run: 'yarn config set "//npm.pkg.github.com/:_authToken" "${VER_ID_GH_TOKEN}"',
     },
   ],
-  releaseWorkflowEnv: {
-    VER_ID_GH_TOKEN: '${{ secrets.VER_ID_GH_TOKEN }}',
-  },
   deps: [
     '@ver-id/node-client',
     'dotenv'

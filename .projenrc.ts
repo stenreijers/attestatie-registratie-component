@@ -5,6 +5,7 @@ const project = new GemeenteNijmegenTsPackage({
   name: 'AttestatieRegestratieComponent',
   projenrcTs: true,
   repository: 'https://github.com/GemeenteNijmegen/attestatie-registratie-component',
+  npmTrustedPublishing: true,
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */

@@ -32,17 +32,17 @@ export class AttestatieRegestratieComponent {
     const intentPayload: IssuanceIntentPayload = {
       payload: {
         data: [
-          { "attributeUuid": "1ac22d17-9c8a-493f-8a27-20f89fcec2c1", "value": "<First names>" },
-          { "attributeUuid": "3d3e898a-4122-45d8-b42f-4d74c8143116", "value": "<Surname>" }
-        ]
-      }
+          { attributeUuid: '1ac22d17-9c8a-493f-8a27-20f89fcec2c1', value: '<First names>' },
+          { attributeUuid: '3d3e898a-4122-45d8-b42f-4d74c8143116', value: '<Surname>' },
+        ],
+      },
     };
 
     // Create intent with client authentication
     const intentId = await issuanceClient.createIssuanceIntent(
       intentPayload,
       codeChallenge.codeChallenge,
-      { client_secret: clientSecret }
+      { client_secret: clientSecret },
     );
 
     // Generate URL with intent

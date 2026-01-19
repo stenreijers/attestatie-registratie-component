@@ -1,5 +1,18 @@
-import { AttestatieRegestratieComponent } from "../AttestationRegistrationComponent";
-import { HttpRequest } from "../HttpRequest";
+import { AttestatieRegestratieComponent } from '../AttestationRegistrationComponent';
+import { HttpRequest } from '../HttpRequest';
+
+jest.mock('@ver-id/node-client', () => ({
+  VeridIssuanceClient: jest.fn().mockImplementation(() => ({
+    createIssuanceIntent: jest.fn(),
+    generateIssuanceUrl: jest.fn(),
+    generateCodeChallenge: jest.fn().mockImplementation(() => {
+      return Promise.resolve({
+        codeChallenge: 'codeChallenge',
+        state: 'state',
+      });
+    }),
+  })),
+}));
 
 describe('AttestatieRegestratieComponent', () => {
   let component: AttestatieRegestratieComponent;

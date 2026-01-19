@@ -1,4 +1,4 @@
-import { MijnProductenClient } from "./MijnProductenClient";
+import { MijnProductenClient } from './MijnProductenClient';
 
 export interface AttestatieAttribute {
   en: string;
@@ -17,7 +17,7 @@ export interface ProductAttestatie {
     uniforme_product_naam: AttestatieAttribute;
     product_code: AttestatieAttribute;
     product_naam: AttestatieAttribute;
-  }
+  };
 }
 
 
@@ -72,8 +72,8 @@ export class ProductenAttestor {
           en: product.naam,
           nl: product.naam,
         },
-      }
-    }
+      },
+    };
 
   }
 }

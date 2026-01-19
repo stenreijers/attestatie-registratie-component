@@ -4,10 +4,10 @@ import * as productType from './test/producttype.json';
 export class MijnProductenClient {
 
   async getProduct(_productUuid: string) {
-    return product
+    return product;
   }
   async getProductMetadata(_productTypeUuid: string) {
-    return productType
+    return productType;
   }
 
 }

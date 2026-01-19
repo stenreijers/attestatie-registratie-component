@@ -1,4 +1,5 @@
 import { GemeenteNijmegenTsPackage } from '@gemeentenijmegen/projen-project-type';
+
 const project = new GemeenteNijmegenTsPackage({
   defaultReleaseBranch: 'main',
   devDeps: ['@gemeentenijmegen/projen-project-type'],
@@ -8,6 +9,7 @@ const project = new GemeenteNijmegenTsPackage({
   npmTrustedPublishing: true,
   deps: [
     '@ver-id/node-client',
+    'dotenv'
   ],
   jestOptions: {
     jestConfig: {

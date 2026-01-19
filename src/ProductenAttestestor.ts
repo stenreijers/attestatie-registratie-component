@@ -1,6 +1,5 @@
 import { MijnProductenClient } from "./MijnProductenClient";
 
-
 export interface AttestatieAttribute {
   en: string;
   nl: string;

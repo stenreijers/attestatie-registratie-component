@@ -1,6 +1,6 @@
 
 
-export interface HttpRequest {
+export interface AttestationRequest {
   path: string;
   queryStringParams: Record<string, string>;
   body: string;

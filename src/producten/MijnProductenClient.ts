@@ -1,5 +1,5 @@
-import * as product from './test/product.json';
-import * as productType from './test/producttype.json';
+import * as product from '../test/resources/product.json';
+import * as productType from '../test/resources/producttype.json';
 
 export class MijnProductenClient {
 

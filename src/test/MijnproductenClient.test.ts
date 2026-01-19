@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { MijnProductenClient } from '../MijnProductenClient';
+import { MijnProductenClient } from '../producten/MijnProductenClient';
 
 
 test('Load product', async () => {

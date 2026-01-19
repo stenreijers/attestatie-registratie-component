@@ -1,4 +1,4 @@
-import { MijnProductenClient } from './MijnProductenClient';
+import { MijnProductenClient } from './producten/MijnProductenClient';
 
 export interface AttestatieAttribute {
   en: string;

@@ -1,2 +1,3 @@
 export * from './AttestationRegistrationComponent';
-export * from './HttpRequest';
+export * from './AttestationRequest';
+

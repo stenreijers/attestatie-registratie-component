@@ -13,6 +13,11 @@ const project = new GemeenteNijmegenTsPackage({
     jestConfig: {
       roots: ['src', 'test']
     }
-  }
+  },
+  tsconfig: {
+    compilerOptions: {
+      isolatedModules: true,
+    },
+  },
 });
 project.synth();

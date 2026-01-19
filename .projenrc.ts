@@ -8,6 +8,7 @@ const project = new GemeenteNijmegenTsPackage({
   npmTrustedPublishing: true,
   deps: [
     '@ver-id/node-client',
+    '@verid-sdk-js-mono/core',
   ],
 });
 project.synth();

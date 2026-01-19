@@ -1,5 +1,4 @@
 import { GemeenteNijmegenTsPackage } from '@gemeentenijmegen/projen-project-type';
-import { NodePackageManager } from 'projen/lib/javascript';
 
 const project = new GemeenteNijmegenTsPackage({
   defaultReleaseBranch: 'main',
@@ -8,7 +7,6 @@ const project = new GemeenteNijmegenTsPackage({
   projenrcTs: true,
   repository: 'https://github.com/GemeenteNijmegen/attestatie-registratie-component',
   npmTrustedPublishing: true,
-  packageManager: NodePackageManager.NPM,
   // workflowBootstrapSteps: [
   //   {
   //     name: 'Setup GitHub Packages auth',

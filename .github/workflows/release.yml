@@ -28,12 +28,8 @@ jobs:
         run: |-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: Setup GitHub Packages auth
-        env:
-          VER_ID_GH_TOKEN: ${{ secrets.VER_ID_GH_TOKEN }}
-        run: yarn config set "//npm.pkg.github.com/:_authToken" "${VER_ID_GH_TOKEN}"
       - name: Install dependencies
-        run: yarn install --check-files --frozen-lockfile
+        run: npm ci
       - name: release
         run: npx projen release
       - name: Check if version has already been tagged

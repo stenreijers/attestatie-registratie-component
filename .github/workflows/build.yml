@@ -19,12 +19,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Setup GitHub Packages auth
-        env:
-          VER_ID_GH_TOKEN: ${{ secrets.VER_ID_GH_TOKEN }}
-        run: yarn config set "//npm.pkg.github.com/:_authToken" "${VER_ID_GH_TOKEN}"
       - name: Install dependencies
-        run: yarn install --check-files
+        run: npm install
       - name: build
         run: npx projen build
       - name: Find mutations

@@ -1,4 +1,5 @@
 import { GemeenteNijmegenTsPackage } from '@gemeentenijmegen/projen-project-type';
+import { NodePackageManager } from 'projen/lib/javascript';
 
 const project = new GemeenteNijmegenTsPackage({
   defaultReleaseBranch: 'main',
@@ -7,16 +8,16 @@ const project = new GemeenteNijmegenTsPackage({
   projenrcTs: true,
   repository: 'https://github.com/GemeenteNijmegen/attestatie-registratie-component',
   npmTrustedPublishing: true,
-  // packageManager: NodePackageManager.NPM, 
-  workflowBootstrapSteps: [
-    {
-      name: 'Setup GitHub Packages auth',
-      env: {
-        VER_ID_GH_TOKEN: '${{ secrets.VER_ID_GH_TOKEN }}',
-      },
-      run: 'yarn config set "//npm.pkg.github.com/:_authToken" "${VER_ID_GH_TOKEN}"',
-    },
-  ],
+  packageManager: NodePackageManager.NPM,
+  // workflowBootstrapSteps: [
+  //   {
+  //     name: 'Setup GitHub Packages auth',
+  //     env: {
+  //       VER_ID_GH_TOKEN: '${{ secrets.VER_ID_GH_TOKEN }}',
+  //     },
+  //     run: 'yarn config set "//npm.pkg.github.com/:_authToken" "${VER_ID_GH_TOKEN}"',
+  //   },
+  // ],
   deps: [
     '@ver-id/node-client',
     'dotenv'

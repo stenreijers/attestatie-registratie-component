@@ -1,5 +1,5 @@
 {
-  "name": "AttestatieRegestratieComponent",
+  "name": "@gemeentenijmegen/attestatie-registratie-component",
   "repository": {
     "type": "git",
     "url": "https://github.com/GemeenteNijmegen/attestatie-registratie-component"

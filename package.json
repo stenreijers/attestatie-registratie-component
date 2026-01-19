@@ -54,6 +54,10 @@
   "version": "0.0.0",
   "jest": {
     "coverageProvider": "v8",
+    "roots": [
+      "src",
+      "test"
+    ],
     "testMatch": [
       "<rootDir>/@(src|test)/**/*(*.)@(spec|test).ts?(x)",
       "<rootDir>/@(src|test)/**/__tests__/**/*.ts?(x)",

@@ -1,5 +1,5 @@
-import { AttestatieRegestratieComponent } from './AttestationRegistrationComponent';
-import { HttpRequest } from './HttpRequest';
+import { AttestatieRegestratieComponent } from "../AttestationRegistrationComponent";
+import { HttpRequest } from "../HttpRequest";
 
 describe('AttestatieRegestratieComponent', () => {
   let component: AttestatieRegestratieComponent;

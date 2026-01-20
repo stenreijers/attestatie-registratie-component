@@ -1,4 +1,5 @@
 import { GemeenteNijmegenTsPackage } from '@gemeentenijmegen/projen-project-type';
+import { Transform } from 'projen/lib/javascript';
 
 const project = new GemeenteNijmegenTsPackage({
   defaultReleaseBranch: 'main',
@@ -24,6 +25,22 @@ const project = new GemeenteNijmegenTsPackage({
   jestOptions: {
     jestConfig: {
       roots: ['src', 'test'],
+      setupFiles: ['dotenv/config'],
+      extensionsToTreatAsEsm: ['.ts'],
+      transformIgnorePatterns: [
+        'node_modules/(?!@ver-id)',
+      ],
+      transform: {
+        '^.+\\.tsx?$': new Transform('ts-jest', {
+          useESM: true,
+          tsconfig: {
+            module: 'ESNext',
+          },
+        }),
+      },
+      moduleNameMapper: {
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+      },
     },
   },
   tsconfig: {

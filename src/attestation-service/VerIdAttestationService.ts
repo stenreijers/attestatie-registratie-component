@@ -1,23 +1,42 @@
 import { IssuanceClientConfig, IssuanceIntentPayload, VeridIssuanceClient } from '@ver-id/node-client';
 import { CredentialAttribute } from './AttestationService';
 
+export interface VerIdAttestationServiceConfig {
+  /**
+   * VerID url?
+   */
+  issuerUri: string;
+  /**
+   * Probably mijn.nijmgen.nl
+   */
+  redirectUri: string;
+  /**
+   * Client id
+   */
+  client_id: string;
+  /**
+   * Client secret
+   */
+  client_secret: string;
+}
+
 export class VerIdAttestationService {
+
+  constructor(private readonly config: VerIdAttestationServiceConfig) {
+  }
 
   async intent(payload: CredentialAttribute[]) {
 
     const config: IssuanceClientConfig = {
-      issuerUri: process.env.VER_ID_ISSUER_URL!,
-      client_id: process.env.VER_ID_CLIENT_ID!,
-      redirectUri: process.env.VER_ID_REDIRECT_URI!,
+      issuerUri: this.config.issuerUri,
+      client_id: this.config.client_id,
+      redirectUri: this.config.redirectUri,
     };
 
     // Initialize the issuance client
     const issuanceClient = new VeridIssuanceClient(config);
 
     const codeChallenge = await issuanceClient.generateCodeChallenge();
-
-    // Get client secret from environment
-    const clientSecret = process.env.VER_ID_CLIENT_SECRET!;
 
     // Build intent payload
     const intentPayload: IssuanceIntentPayload = {
@@ -34,7 +53,7 @@ export class VerIdAttestationService {
     const intentId = await issuanceClient.createIssuanceIntent(
       intentPayload,
       codeChallenge.codeChallenge,
-      { client_secret: clientSecret },
+      { client_secret: this.config.client_secret },
     );
 
     // Generate URL with intent

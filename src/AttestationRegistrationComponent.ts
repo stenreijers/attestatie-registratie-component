@@ -1,4 +1,5 @@
-import { AttestatieFormatter } from './AttestatieFormatter';
+
+import { AttestatieFormatter } from './attestatie-formatter/AttestatieFormatter';
 import { AttestationService } from './attestation-service/AttestationService';
 import { AttestationRequest } from './AttestationRequest';
 import { TokenVerification } from './auth/TokenVerification';

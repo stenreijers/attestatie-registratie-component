@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { AttestatieFormatter } from '../ProductenFormatter';
-import { Product } from '../ProductSchema';
+import { Product } from '../../producten/ProductSchema';
+import { AttestatieFormatter } from '../AttestatieFormatter';
 
 describe('AttestatieFormatter', () => {
   const mockProduct: Product = {
@@ -28,8 +27,7 @@ describe('AttestatieFormatter', () => {
   };
 
   it('should format standplaatsvergunning product correctly', () => {
-    const formatter = new AttestatieFormatter();
-    const result = formatter.format('standplaatsvergunning', mockProduct);
+    const result = AttestatieFormatter.format('standplaatsvergunning', mockProduct);
 
     expect(result).toHaveLength(9);
     expect(result[0]).toEqual({
@@ -43,19 +41,16 @@ describe('AttestatieFormatter', () => {
   });
 
   it('should throw error for unknown template', () => {
-    const formatter = new AttestatieFormatter();
-    expect(() => formatter.format('unknown', mockProduct)).toThrow('Unknown template: unknown');
+    expect(() => AttestatieFormatter.format('unknown', mockProduct)).toThrow('Unknown template: unknown');
   });
 
   it('should throw error when bsn is missing', () => {
-    const formatter = new AttestatieFormatter();
     const invalidProduct = { ...mockProduct, eigenaren: [] };
-    expect(() => formatter.format('standplaatsvergunning', invalidProduct)).toThrow('Invalid product: missing required fields');
+    expect(() => AttestatieFormatter.format('standplaatsvergunning', invalidProduct)).toThrow('Invalid product: missing required fields');
   });
 
   it('should throw error when uuid is missing', () => {
-    const formatter = new AttestatieFormatter();
     const invalidProduct = { ...mockProduct, uuid: '' };
-    expect(() => formatter.format('standplaatsvergunning', invalidProduct)).toThrow('Invalid product: missing required fields');
+    expect(() => AttestatieFormatter.format('standplaatsvergunning', invalidProduct)).toThrow('Invalid product: missing required fields');
   });
 });

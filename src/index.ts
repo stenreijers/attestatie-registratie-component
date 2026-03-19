@@ -1,4 +1,4 @@
-export * from './AttestatieFormatter';
+export * from './attestatie-formatter/AttestatieFormatter';
 export * from './attestation-service/AttestationService';
 export * from './attestation-service/VerIdAttestationService';
 export * from './AttestationRegistrationComponent';

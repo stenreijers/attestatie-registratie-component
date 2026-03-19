@@ -1,15 +1,11 @@
-import { CredentialAttribute } from './attestation-service/AttestationService';
-import { Product } from './producten/ProductSchema';
+import { CredentialAttribute } from '../attestation-service/AttestationService';
+import { Product } from '../producten/ProductSchema';
 
 /**
  * Allows us to define multiple product types
  * Goal is to make this extensible using external configuration
  */
 export class AttestatieFormatter {
-
-  private static types: Record<string, () => IAttestatieFormatter<any>> = {
-    'standplaatsvergunning': () => new StandplaatsvergunningAttestatieFormatter(),
-  };
 
   static format(template: string, input: any): CredentialAttribute[] {
     const formatter = this.types[template];
@@ -19,13 +15,17 @@ export class AttestatieFormatter {
     return formatter().format(input);
   }
 
+  private static types: Record<string, () => IAttestatieFormatter<any>> = {
+    standplaatsvergunning: () => new StandplaatsvergunningAttestatieFormatter(),
+  };
+
 }
 
 /**
  * Interface for mapping inputs to attestations
  */
 interface IAttestatieFormatter<T> {
-  format(input: T): CredentialAttribute[]
+  format(input: T): CredentialAttribute[];
 }
 
 class StandplaatsvergunningAttestatieFormatter implements IAttestatieFormatter<Product> {
@@ -55,7 +55,7 @@ class StandplaatsvergunningAttestatieFormatter implements IAttestatieFormatter<P
       },
       {
         attributeUuid: 'e56347da-15b9-476c-be5d-247a1115858b',
-        value: product.dataobject?.location?.toString() ?? "locatie onbekend",
+        value: product.dataobject?.location?.toString() ?? 'locatie onbekend',
       },
       {
         attributeUuid: '00894814-01dc-4498-ba57-f6e3494f4b22',

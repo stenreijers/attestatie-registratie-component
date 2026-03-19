@@ -73,6 +73,7 @@ describe('AttestatieRegestratieComponent', () => {
     component = new AttestatieRegestratieComponent({
       attestationService: mockedAttestationService,
       productenService: mockedProductenService,
+      apiKey: 'valid-token',
     });
   });
 
@@ -89,11 +90,35 @@ describe('AttestatieRegestratieComponent', () => {
       await expect(component.start(request)).rejects.toThrow('Authentication token is missing');
     });
 
-    it('should throw error when token is invalid', async () => {
+    it('should throw error when API key is invalid', async () => {
       const request = {
         token: 'invalid-token',
       } as AttestationRequest;
+      await expect(component.start(request)).rejects.toThrow('Invalid API key');
+    });
 
+    it('should handle JWT authentication', async () => {
+      const MockedTokenVerification = TokenVerification as jest.Mock<TokenVerification>;
+      const mockVerify = jest.fn();
+      MockedTokenVerification.mockImplementation(() => ({
+        verify: mockVerify,
+      } as unknown as TokenVerification));
+
+      const componentWithJWT = new AttestatieRegestratieComponent({
+        attestationService: mockedAttestationService,
+        productenService: mockedProductenService,
+        jwtSecret: 'test-secret',
+      });
+
+      const request = {
+        token: 'jwt-token',
+      } as AttestationRequest;
+
+      await expect(componentWithJWT.start(request)).resolves.toBe('http://example.com');
+      expect(mockVerify).toHaveBeenCalledWith('jwt-token');
+    });
+
+    it('should throw error when JWT is invalid', async () => {
       const MockedTokenVerification = TokenVerification as jest.Mock<TokenVerification>;
       const mockVerify = jest.fn().mockImplementation(() => {
         throw new Error('Invalid token');
@@ -102,13 +127,17 @@ describe('AttestatieRegestratieComponent', () => {
         verify: mockVerify,
       } as unknown as TokenVerification));
 
-      // Re-instantiate component to pick up new mock
-      const componentWithInvalidToken = new AttestatieRegestratieComponent({
+      const componentWithInvalidJWT = new AttestatieRegestratieComponent({
         attestationService: mockedAttestationService,
         productenService: mockedProductenService,
+        jwtSecret: 'test-secret',
       });
 
-      await expect(componentWithInvalidToken.start(request)).rejects.toThrow('Invalid token');
+      const request = {
+        token: 'invalid-jwt',
+      } as AttestationRequest;
+
+      await expect(componentWithInvalidJWT.start(request)).rejects.toThrow('Faild JWT authentication');
     });
   });
 

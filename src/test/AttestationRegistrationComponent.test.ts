@@ -1,9 +1,8 @@
-
 import { VerIdAttestationService } from '../attestation-service/VerIdAttestationService';
 import { AttestatieRegestratieComponent } from '../AttestationRegistrationComponent';
 import { AttestationRequest } from '../AttestationRequest';
 import { TokenVerification } from '../auth/TokenVerification';
-import { Product } from '../producten/ProductenService';
+import { Product, ProductenService } from '../producten/ProductenService';
 
 // Keep this for later use as it works...
 // jest.mock('@ver-id/node-client', () => ({
@@ -38,7 +37,7 @@ jest.mock('../auth/TokenVerification', () => ({
 describe('AttestatieRegestratieComponent', () => {
   let component: AttestatieRegestratieComponent;
   let mockedAttestationService: VerIdAttestationService;
-  let mockedProductenService: any;
+  let mockedProductenService: ProductenService;
 
   beforeEach(() => {
     mockedAttestationService = new VerIdAttestationService({
@@ -69,7 +68,7 @@ describe('AttestatieRegestratieComponent', () => {
       getProduct: jest.fn().mockImplementation(() => {
         return Promise.resolve(mockedProduct);
       }),
-    };
+    } as ProductenService;
     component = new AttestatieRegestratieComponent({
       attestationService: mockedAttestationService,
       productenService: mockedProductenService,

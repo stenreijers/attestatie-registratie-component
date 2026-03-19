@@ -13,6 +13,7 @@ const project = new GemeenteNijmegenTsPackage({
     '@ver-id/node-client',
     'dotenv',
     'jsonwebtoken',
+    'zod',
   ],
   jestOptions: {
 

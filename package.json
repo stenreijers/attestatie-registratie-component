@@ -47,7 +47,8 @@
   "dependencies": {
     "@ver-id/node-client": "^0.10.2",
     "dotenv": "^17.2.3",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^3.22.4"
   },
   "main": "lib/index.js",
   "license": "EUPL-1.2",

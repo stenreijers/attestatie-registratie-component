@@ -9,11 +9,14 @@ export interface AttestatieRegestratieComponentOptions {
   readonly productenService?: ProductenService;
   readonly tokenVerification?: TokenVerification;
   readonly jwtSecret?: string;
+  readonly apiKey?: string;
 }
 
 export class AttestatieRegestratieComponent {
 
-  constructor(private readonly options: AttestatieRegestratieComponentOptions) { }
+  constructor(private readonly options: AttestatieRegestratieComponentOptions) {
+
+  }
 
   /**
    * Note: requested by the portal backend (should be protected)
@@ -31,8 +34,21 @@ export class AttestatieRegestratieComponent {
     }
 
     // Verify token
-    const verifier = this.options.tokenVerification ?? new TokenVerification(this.options.jwtSecret || '');
-    verifier.verify(request.token);
+    if (this.options.tokenVerification || this.options.jwtSecret) {
+      try {
+        const verifier = this.options.tokenVerification ?? new TokenVerification(this.options.jwtSecret || '');
+        verifier.verify(request.token);
+      } catch (error) {
+        console.error(error);
+        throw new Error('Faild JWT authentication');
+      }
+    } else if (this.options.apiKey) {
+      if (this.options.apiKey !== request.token) {
+        throw new Error('Invalid API key');
+      }
+    } else {
+      throw Error('No authentication mechanism configured');
+    }
 
     // 1. Call open-product to get prodcut
     const product = await this.options.productenService.getProduct(request.id);

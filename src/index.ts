@@ -6,7 +6,6 @@ export * from './AttestationRequest';
 export * from './Conversions';
 export * from './producten/OpenProductApiService';
 export * from './producten/ProductenService';
-export * from './producten/ProductenServiceFactory';
 export * from './producten/ProductSchema';
 export * from './producten/StaticProductenService';
 

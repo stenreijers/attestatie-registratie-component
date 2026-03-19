@@ -1,6 +1,6 @@
+import { IAttestatieFormatter } from './AttestatieFormatter';
 import { CredentialAttribute } from '../attestation-service/AttestationService';
 import { Product } from '../producten/ProductSchema';
-import { IAttestatieFormatter } from './AttestatieFormatter';
 
 export class StandplaatsvergunningAttestatieFormatter implements IAttestatieFormatter<Product> {
   format(product: Product): CredentialAttribute[] {

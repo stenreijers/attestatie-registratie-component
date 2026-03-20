@@ -1,9 +1,9 @@
-
 import { VerIdAttestationService } from '../attestation-service/VerIdAttestationService';
 import { AttestatieRegestratieComponent } from '../AttestationRegistrationComponent';
 import { AttestationRequest } from '../AttestationRequest';
 import { TokenVerification } from '../auth/TokenVerification';
-import { Product } from '../producten/ProductenService';
+import { ProductenService } from '../producten/ProductenService';
+import { Product } from '../producten/ProductSchema';
 
 // Keep this for later use as it works...
 // jest.mock('@ver-id/node-client', () => ({
@@ -38,7 +38,7 @@ jest.mock('../auth/TokenVerification', () => ({
 describe('AttestatieRegestratieComponent', () => {
   let component: AttestatieRegestratieComponent;
   let mockedAttestationService: VerIdAttestationService;
-  let mockedProductenService: any;
+  let mockedProductenService: ProductenService;
 
   beforeEach(() => {
     mockedAttestationService = new VerIdAttestationService({
@@ -49,8 +49,12 @@ describe('AttestatieRegestratieComponent', () => {
     });
     const mockedProduct: Product = {
       uuid: '123e4567-e89b-12d3-a456-426614174000',
+      url: 'https://example.com/product',
       naam: 'Test Product',
+      aanmaak_datum: '2022-01-01T00:00:00.000Z',
+      update_datum: '2022-01-01T00:00:00.000Z',
       producttype: {
+        uuid: 'e9522583-d61f-4232-8268-d1596a94bf2d',
         code: 'TEST',
         uniforme_product_naam: 'Test Product',
       },
@@ -61,6 +65,7 @@ describe('AttestatieRegestratieComponent', () => {
       start_datum: '2022-01-01',
       eigenaren: [
         {
+          uuid: '1dbe98d5-118e-4143-8e24-f5c866efc799',
           bsn: '123456789',
         },
       ],
@@ -69,7 +74,7 @@ describe('AttestatieRegestratieComponent', () => {
       getProduct: jest.fn().mockImplementation(() => {
         return Promise.resolve(mockedProduct);
       }),
-    };
+    } as ProductenService;
     component = new AttestatieRegestratieComponent({
       attestationService: mockedAttestationService,
       productenService: mockedProductenService,

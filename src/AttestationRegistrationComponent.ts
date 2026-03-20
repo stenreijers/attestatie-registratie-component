@@ -1,8 +1,9 @@
+
+import { AttestatieFormatter } from './attestatie-formatter/AttestatieFormatter';
 import { AttestationService } from './attestation-service/AttestationService';
 import { AttestationRequest } from './AttestationRequest';
 import { TokenVerification } from './auth/TokenVerification';
 import { ProductenService } from './producten/ProductenService';
-import { createStandplaatsvergunningCredential } from './producten/Standplaatsvergunning';
 
 export interface AttestatieRegestratieComponentOptions {
   readonly attestationService?: AttestationService;
@@ -57,7 +58,7 @@ export class AttestatieRegestratieComponent {
     // As this is a backend call we can ignore this for now.
 
     // 3. Map to attestation
-    const kaartje = createStandplaatsvergunningCredential(product);
+    const kaartje = AttestatieFormatter.format('standplaatsvergunning', product);
 
     // 4. Call Ver.ID and return the url
     return this.options.attestationService.intent(kaartje);

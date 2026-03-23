@@ -52,4 +52,5 @@ const project = new GemeenteNijmegenTsPackage({
     },
   },
 });
+project.gitignore.exclude('.yarn', '.claude');
 project.synth();

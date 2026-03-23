@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import { Source } from '../core/Source';
+import { Source, SourceConfig } from '../core/Source';
 
 export const StatusEnum = z.enum([
   'initieel',
@@ -92,8 +92,6 @@ export const ProductSchema = z.object({
 export type Product = z.infer<typeof ProductSchema>;
 export type Eigenaar = z.infer<typeof EigenaarSchema>;
 export type NestedProductType = z.infer<typeof NestedProductTypeSchema>;
-
-import { SourceConfig } from '../core/Source';
 
 export interface OpenProductConfig extends SourceConfig {
   readonly baseUrl: string;

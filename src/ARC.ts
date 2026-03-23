@@ -1,8 +1,8 @@
-import { Source } from './core/Source';
 import { Attestation } from './core/Attestation';
 import { Provider } from './core/Provider';
-import { Store } from './core/Store';
 import { Session } from './core/Session';
+import { Source } from './core/Source';
+import { Store } from './core/Store';
 import {
   ARCHooks,
   IssueParams, IssueParamsSchema, IssueResult,

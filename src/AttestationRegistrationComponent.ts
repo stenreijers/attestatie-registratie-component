@@ -94,8 +94,12 @@ export class AttestatieRegistratieComponent {
   }
 
   /**
-   * Note: requested by the user's browser
-   * @param _request
+   * Handles the callback from the attestation provider when using a OAuth
+   * flow.
+   * 
+   * Note: requested by the user's browser but very likely to not happen as
+   * part of the issueance flow (e.g. user exits wallet in same device flow).
+   * @param request
    */
   async callback(request: CallbackRequest): Promise<CallbackResponse> {
     console.log('Callback request', request);

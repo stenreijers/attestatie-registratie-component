@@ -1,5 +1,5 @@
-import { assertIssuanceV1JwtPayload, ICacheManager, IssuanceIntentPayload, VeridIssuanceClient } from '@ver-id/node-client';
-import { AttestationService, CredentialAttribute } from './AttestationService';
+import { ICacheManager, IssuanceIntentPayload, VeridIssuanceClient } from '@ver-id/node-client';
+import { AttestationService, CredentialMapping } from './AttestationService';
 
 
 export interface VerIdAttestationServiceConfig {
@@ -12,10 +12,6 @@ export interface VerIdAttestationServiceConfig {
    */
   redirectUri: string;
   /**
-   * Client id
-   */
-  client_id: string;
-  /**
    * Client secret
    */
   client_secret: string;
@@ -27,12 +23,13 @@ export interface VerIdAttestationServiceConfig {
 
 export class VerIdAttestationService implements AttestationService {
 
-  private issuanceClient: VeridIssuanceClient;
+  constructor(private readonly config: VerIdAttestationServiceConfig, private readonly issuanceClient?: VeridIssuanceClient) {
+  }
 
-  constructor(private readonly config: VerIdAttestationServiceConfig, issuanceClient?: VeridIssuanceClient) {
-    this.issuanceClient = issuanceClient ?? new VeridIssuanceClient({
+  private getIssueanceClient(flowUuid: string) {
+    return this.issuanceClient ?? new VeridIssuanceClient({
       issuerUri: this.config.issuerUri,
-      client_id: this.config.client_id,
+      client_id: flowUuid,
       redirectUri: this.config.redirectUri,
       options: {
         cacheManager: this.config.cacheManager,
@@ -40,19 +37,17 @@ export class VerIdAttestationService implements AttestationService {
     });
   }
 
-  async intent(payload: CredentialAttribute[]) {
-
-    const codeChallenge = await this.issuanceClient.generateCodeChallenge();
+  async intent(payload: CredentialMapping, flowUuid: string) {
+    const verIdClient = this.getIssueanceClient(flowUuid);
+    const codeChallenge = await verIdClient.generateCodeChallenge();
 
     // Build intent payload
     const intentPayload: IssuanceIntentPayload = {
-      payload: {
-        data: payload,
-      },
+      payload,
     };
 
     // Create intent with client authentication
-    const intent = await this.issuanceClient.createIssuanceIntent(
+    const intent = await verIdClient.createIssuanceIntent(
       intentPayload,
       codeChallenge.codeChallenge,
       { client_secret: this.config.client_secret },
@@ -61,7 +56,7 @@ export class VerIdAttestationService implements AttestationService {
     console.log('TODO: Save this somewhere safe', intent.issuance_run_uuid);
 
     // Generate URL with intent
-    const userUrl = await this.issuanceClient.generateIssuanceUrl({
+    const userUrl = await verIdClient.generateIssuanceUrl({
       intent_id: intent.intent_id,
       state: codeChallenge.state,
       codeChallenge: codeChallenge.codeChallenge,
@@ -70,16 +65,28 @@ export class VerIdAttestationService implements AttestationService {
     return userUrl.issuanceUrl;
   }
 
-  async authorize(params: URLSearchParams) {
-    const finalized = await this.issuanceClient.finalize({
-      callbackParams: params,
-      clientAuth: {
-        client_secret: this.config.client_secret,
-      },
-    });
+  /**
+   * This part of the flow is not always reached as a user can
+   * just quit the flow when credentials are loaded into the wallet
+   * callback is not guaranteed to end up at ARC.
+   */
+  async authorize() {
 
-    const jwt = await this.issuanceClient.decode(finalized, assertIssuanceV1JwtPayload);
-    console.log('JWT', JSON.stringify(jwt.payload.output));
+    throw Error('Not implemented');
+
+
+    // const verIdClient = this.getIssueanceClient(flowUuid);
+
+
+    // const finalized = await verIdClient.finalize({
+    //   callbackParams: params,
+    //   clientAuth: {
+    //     client_secret: this.config.client_secret,
+    //   },
+    // });
+
+    // const jwt = await verIdClient.decode(finalized, assertIssuanceV1JwtPayload);
+    // console.log('JWT', JSON.stringify(jwt.payload.output));
 
     // TODO: implement revocationKeys as response and test it
     // return jwt.payload.output[0].revocationKeys;

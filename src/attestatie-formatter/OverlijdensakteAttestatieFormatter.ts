@@ -3,6 +3,11 @@ import { CredentialMapping } from '../attestation-service/AttestationService';
 import { Product } from '../producten/ProductSchema';
 
 export class OverlijdensakteAttestatieFormatter implements IAttestatieFormatter<Product> {
+
+  getFlowUuid(): string {
+    return ''; // TODO fill this
+  }
+
   format(product: Product): CredentialMapping {
 
     const bsn = product.eigenaren[0]?.bsn;

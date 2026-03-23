@@ -49,15 +49,17 @@ export class VerIdAttestationService implements AttestationService {
     };
 
     // Create intent with client authentication
-    const intentId = await verIdClient.createIssuanceIntent(
+    const intent = await verIdClient.createIssuanceIntent(
       intentPayload,
       codeChallenge.codeChallenge,
       { client_secret: this.config.client_secret },
     );
 
+    console.log('TODO: Save this somewhere safe', intent.issuance_run_uuid);
+
     // Generate URL with intent
     const userUrl = await verIdClient.generateIssuanceUrl({
-      intent_id: intentId,
+      intent_id: intent.intent_id,
       state: codeChallenge.state,
       codeChallenge: codeChallenge.codeChallenge,
     });

@@ -57,6 +57,7 @@ export class DynamoDb extends Store<DynamoDbConfig> {
     }
 
     const unmarshalled = unmarshall(response.Item) as Record<string, string>;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [this.partitionKey]: _pk, [this.ttlAttribute]: _ttl, ...rest } = unmarshalled;
     return rest;
   }

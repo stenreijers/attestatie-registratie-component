@@ -63,12 +63,14 @@ export class VerID extends Provider<VerIDConfig, VerIDAttestationConfig> {
     };
   }
 
-  async status(_sessionId: string): Promise<SessionStatus> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async status(sessionId: string): Promise<SessionStatus> {
     // TODO: call Ver.ID API to get issuance run status
     throw new Error('Status check not yet implemented');
   }
 
-  async revoke(_sessionId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async revoke(sessionId: string): Promise<void> {
     // TODO: call Ver.ID API to revoke issuance run
     throw new Error('Revocation not yet implemented');
   }

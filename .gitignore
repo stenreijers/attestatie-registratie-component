@@ -55,3 +55,8 @@ junit.xml
 !/.github/workflows/auto-merge.yml
 !/.nvmrc
 !/.projenrc.ts
+
+
+
+.yarn
+.claude

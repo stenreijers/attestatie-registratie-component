@@ -5,7 +5,12 @@ import { Product } from '../../sources/OpenProduct';
 
 export class OpenProductOverlijdensakte extends Attestation<Product> {
   constructor() {
-    super({ name: 'overlijdensakte', sourceName: 'openproduct' });
+    super({
+      name: 'overlijdensakte',
+      sourceName: 'openproduct',
+      sourceIdentifier: 'overlijdensakte',
+      sourceIdentifierPath: 'producttype.uniforme_product_naam',
+    });
   }
 
   map(product: Product): MappingResult {

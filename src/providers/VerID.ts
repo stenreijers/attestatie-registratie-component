@@ -1,5 +1,6 @@
 import { ICacheManager, IssuanceIntentPayload, VeridIssuanceClient } from '@ver-id/node-client';
 import { Provider, ProviderConfig, AttestationConfig } from '../core/Provider';
+import { SessionContext } from '../core/Session';
 import { CallbackError, NotImplementedError, ProviderNotInitializedError } from '../errors';
 import { MappingResult, ProviderIssueResult, SessionStatus } from '../schemas';
 
@@ -34,8 +35,8 @@ export class VerID extends Provider<VerIDConfig, VerIDAttestationConfig> {
     });
   }
 
-  async issue(attestationName: string, mappingResult: MappingResult): Promise<ProviderIssueResult> {
-    const attestationConfig = this.getAttestationConfig(attestationName);
+  async issue(context: SessionContext, mappingResult: MappingResult): Promise<ProviderIssueResult> {
+    const attestationConfig = this.getAttestationConfig(context.attestation);
     const client = this.getClient(attestationConfig.flowUuid);
     const codeChallenge = await client.generateCodeChallenge();
 
@@ -57,11 +58,20 @@ export class VerID extends Provider<VerIDConfig, VerIDAttestationConfig> {
       codeChallenge: codeChallenge.codeChallenge,
     });
 
-    return {
+    const result: ProviderIssueResult = {
+      type: 'oauth',
       url: userUrl.issuanceUrl,
       sessionId: intent.issuance_run_uuid!,
       callbackState: codeChallenge.state,
     };
+
+    await this.emitIssuanceEvent({
+      sessionId: result.sessionId,
+      status: 'pending',
+      context,
+    });
+
+    return result;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

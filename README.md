@@ -50,12 +50,14 @@ arc.on('issuance', async (event) => {
 });
 
 // Attestatie uitgeven
-const { url, sessionId } = await arc.issue({
+const result = await arc.issue({
   source: 'openproduct', id: 'product-uuid', attestation: 'standplaatsvergunning',
 });
+// result.type === 'oauth' → redirect naar result.url
+// result.type === 'direct' → direct afgerond
 
 // Status opvragen
-const { status } = await arc.status({ sessionId });
+const { status } = await arc.status({ sessionId: result.sessionId });
 
 // Intrekken
 await arc.revoke({ sessionId });

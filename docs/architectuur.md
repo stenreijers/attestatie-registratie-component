@@ -49,7 +49,7 @@ Bij elke statusovergang in het uitgifteproces wordt een `issuance` event uitgest
 ARC biedt drie methoden:
 
 ```ts
-arc.issue(params)   → { url, sessionId }   // Attestatie starten
+arc.issue(params)   → IssueResultOAuth | IssueResultDirect  // Attestatie starten
 arc.status(params)  → { sessionId, status } // Status opvragen
 arc.revoke(params)  → { sessionId }         // Attestatie intrekken
 ```

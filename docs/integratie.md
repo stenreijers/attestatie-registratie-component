@@ -121,8 +121,10 @@ const result = await arc.issue({
   id: body.productId,
   attestation: 'standplaatsvergunning',
 });
-// result.url — stuur de gebruiker hierheen
+// result.type — 'oauth' of 'direct'
 // result.sessionId — sla op in uw eigen database
+// Bij OAuth: result.url — redirect de gebruiker hierheen
+// Bij OAuth: result.callbackState — de state voor de callback
 ```
 
 ### Callback (GET /callback)

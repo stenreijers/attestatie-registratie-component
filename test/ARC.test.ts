@@ -53,11 +53,14 @@ describe('ARC', () => {
       const result = await arc.issue({
         source: 'openproduct',
         id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
       });
 
-      expect(result.url).toBe('https://verid.example.com/issuance/mock');
+      expect(result.type).toBe('oauth');
       expect(result.sessionId).toBe('mock-session-id');
+      if (result.type === 'oauth') {
+        expect(result.url).toBe('https://verid.example.com/issuance/mock');
+        expect(result.callbackState).toBe('mock-state');
+      }
       expect(source.fetchCalls).toEqual([validProduct.uuid]);
       expect(provider.issueCalls).toHaveLength(1);
       expect(provider.issueCalls[0].attestationName).toBe('standplaatsvergunning');
@@ -70,7 +73,6 @@ describe('ARC', () => {
       await arc.issue({
         source: 'openproduct',
         id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
       });
 
       expect(issuanceEvents).toHaveLength(1);
@@ -89,7 +91,6 @@ describe('ARC', () => {
       await arc.issue({
         source: 'openproduct',
         id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
       });
 
       const session = await store.get('mock-session-id');
@@ -106,18 +107,18 @@ describe('ARC', () => {
       await expect(arc.issue({
         source: 'unknown',
         id: '123',
-        attestation: 'standplaatsvergunning',
       })).rejects.toThrow('Unknown source: unknown');
     });
 
-    it('should throw for unknown attestation', async () => {
+    it('should throw when no attestation matches source data', async () => {
+      const unmatchedProduct = { ...validProduct, producttype: { ...validProduct.producttype, uniforme_product_naam: 'unknown' } };
+      source.addData('unmatched-id', unmatchedProduct);
       const arc = createARC();
 
       await expect(arc.issue({
         source: 'openproduct',
-        id: '123',
-        attestation: 'unknown',
-      })).rejects.toThrow('No attestation for openproduct → unknown');
+        id: 'unmatched-id',
+      })).rejects.toThrow('No matching attestation found for source "openproduct"');
     });
 
     it('should not fail if event handler throws', async () => {
@@ -132,7 +133,6 @@ describe('ARC', () => {
       const result = await arc.issue({
         source: 'openproduct',
         id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
       });
 
       expect(result.sessionId).toBe('mock-session-id');

@@ -1,5 +1,6 @@
 import { VeridIssuanceClient } from '@ver-id/node-client';
 import { InMemory } from '../../src/adapters/InMemory';
+import { EventListeners } from '../../src/core/Base';
 import { Session } from '../../src/core/Session';
 import { VerID } from '../../src/providers/VerID';
 import { IssuanceEvent } from '../../src/schemas';
@@ -43,22 +44,27 @@ describe('VerID', () => {
       mockClient,
     );
 
+    const listeners: EventListeners = {};
+    provider.init(listeners);
     provider.setSession(new Session({ store }));
     provider.on('issuance', async (event) => { issuanceEvents.push(event); });
   });
 
   describe('issue', () => {
     it('should create intent and return issuance URL', async () => {
-      const result = await provider.issue('standplaatsvergunning', { bsn: '999999333' });
+      const result = await provider.issue({ source: 'openproduct', id: 'product-123', attestation: 'standplaatsvergunning' }, { bsn: '999999333' });
 
-      expect(result.url).toBe('https://verid.example.com/issuance/start');
+      expect(result.type).toBe('oauth');
       expect(result.sessionId).toBe('mock-run-uuid');
-      expect(result.callbackState).toBe('mock-state');
+      if (result.type === 'oauth') {
+        expect(result.url).toBe('https://verid.example.com/issuance/start');
+        expect(result.callbackState).toBe('mock-state');
+      }
     });
 
     it('should pass mapping result as payload to Ver.ID client', async () => {
       const mappingResult = { bsn: '999999333', kenmerk: 'abc' };
-      await provider.issue('standplaatsvergunning', mappingResult);
+      await provider.issue({ source: 'openproduct', id: 'product-123', attestation: 'standplaatsvergunning' }, mappingResult);
 
       expect(mockClient.createIssuanceIntent).toHaveBeenCalledWith(
         { payload: { mapping: mappingResult } },
@@ -68,7 +74,7 @@ describe('VerID', () => {
     });
 
     it('should throw for unconfigured attestation', async () => {
-      await expect(provider.issue('unknown', {})).rejects.toThrow(
+      await expect(provider.issue({ source: 'openproduct', id: '123', attestation: 'unknown' }, {})).rejects.toThrow(
         'No configuration for attestation "unknown"',
       );
     });

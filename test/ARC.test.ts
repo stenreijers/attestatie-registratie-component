@@ -56,8 +56,12 @@ describe('ARC', () => {
         attestation: 'standplaatsvergunning',
       });
 
-      expect(result.url).toBe('https://verid.example.com/issuance/mock');
+      expect(result.type).toBe('oauth');
       expect(result.sessionId).toBe('mock-session-id');
+      if (result.type === 'oauth') {
+        expect(result.url).toBe('https://verid.example.com/issuance/mock');
+        expect(result.callbackState).toBe('mock-state');
+      }
       expect(source.fetchCalls).toEqual([validProduct.uuid]);
       expect(provider.issueCalls).toHaveLength(1);
       expect(provider.issueCalls[0].attestationName).toBe('standplaatsvergunning');

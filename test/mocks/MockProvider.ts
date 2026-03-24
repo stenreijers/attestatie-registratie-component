@@ -1,4 +1,5 @@
 import { Provider, ProviderConfig, AttestationConfig } from '../../src/core/Provider';
+import { SessionContext } from '../../src/core/Session';
 import { MappingResult, ProviderIssueResult, SessionStatus } from '../../src/schemas';
 
 export interface MockProviderConfig extends ProviderConfig {}
@@ -19,6 +20,7 @@ export class MockProvider extends Provider<MockProviderConfig, MockAttestationCo
   public statusCalls: string[] = [];
 
   private nextIssueResult: ProviderIssueResult = {
+    type: 'oauth',
     url: 'https://verid.example.com/issuance/mock',
     sessionId: 'mock-session-id',
     callbackState: 'mock-state',
@@ -38,8 +40,13 @@ export class MockProvider extends Provider<MockProviderConfig, MockAttestationCo
     this.nextStatus = status;
   }
 
-  async issue(attestationName: string, payload: MappingResult): Promise<ProviderIssueResult> {
-    this.issueCalls.push({ attestationName, payload });
+  async issue(context: SessionContext, payload: MappingResult): Promise<ProviderIssueResult> {
+    this.issueCalls.push({ attestationName: context.attestation, payload });
+    await this.emitIssuanceEvent({
+      sessionId: this.nextIssueResult.sessionId,
+      status: 'pending',
+      context,
+    });
     return this.nextIssueResult;
   }
 

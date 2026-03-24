@@ -17,16 +17,27 @@ export const RevokeParamsSchema = z.object({
 });
 export type RevokeParams = z.infer<typeof RevokeParamsSchema>;
 
-export const IssueResultSchema = z.object({
+export const IssueResultOAuthSchema = z.object({
+  type: z.literal('oauth'),
+  sessionId: z.string(),
   url: z.string(),
+  callbackState: z.string(),
+});
+export type IssueResultOAuth = z.infer<typeof IssueResultOAuthSchema>;
+
+export const IssueResultDirectSchema = z.object({
+  type: z.literal('direct'),
   sessionId: z.string(),
 });
+export type IssueResultDirect = z.infer<typeof IssueResultDirectSchema>;
+
+export const IssueResultSchema = z.discriminatedUnion('type', [
+  IssueResultOAuthSchema,
+  IssueResultDirectSchema,
+]);
 export type IssueResult = z.infer<typeof IssueResultSchema>;
 
-export const ProviderIssueResultSchema = IssueResultSchema.extend({
-  callbackState: z.string().optional(),
-});
-export type ProviderIssueResult = z.infer<typeof ProviderIssueResultSchema>;
+export type ProviderIssueResult = IssueResult;
 
 export const MappingResultSchema = z.record(z.string(), z.unknown());
 export type MappingResult = z.infer<typeof MappingResultSchema>;

@@ -59,24 +59,15 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
 
     const sourceData = await source.fetch(validated.id);
     const mappingResult = attestation.map(sourceData);
-    const providerResult = await this.options.provider.issue(validated.attestation, mappingResult);
+    const providerResult = await this.options.provider.issue(context, mappingResult);
 
     await this.session.save(providerResult.sessionId, context);
 
-    if (providerResult.callbackState) {
+    if (providerResult.type === 'oauth') {
       await this.session.saveCallback(providerResult.callbackState, providerResult.sessionId, context);
     }
 
-    await this.provider.emit('issuance', {
-      sessionId: providerResult.sessionId,
-      status: 'pending',
-      context,
-    });
-
-    return {
-      url: providerResult.url,
-      sessionId: providerResult.sessionId,
-    };
+    return providerResult;
   }
 
   async status(params: StatusParams): Promise<StatusResult> {

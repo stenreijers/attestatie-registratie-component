@@ -1,6 +1,6 @@
 import { AttestationNotConfiguredError } from '../errors';
 import { EventHandler, EventMap, IssuanceEvent, MappingResult, ProviderIssueResult, SessionStatus } from '../schemas';
-import { Session } from './Session';
+import { Session, SessionContext } from './Session';
 
 export interface ProviderConfig {}
 
@@ -59,7 +59,7 @@ export abstract class Provider<
     await this.emit('issuance', event);
   }
 
-  abstract issue(attestationName: string, payload: MappingResult): Promise<ProviderIssueResult>;
+  abstract issue(context: SessionContext, payload: MappingResult): Promise<ProviderIssueResult>;
   abstract status(sessionId: string): Promise<SessionStatus>;
   abstract revoke(sessionId: string): Promise<void>;
 }

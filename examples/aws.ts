@@ -77,6 +77,13 @@ export async function issueHandler(event: { body: string }) {
     id: body.productId,
   });
 
+  if (result.type !== 'oauth') {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ sessionId: result.sessionId }),
+    };
+  }
+
   return {
     statusCode: 200,
     body: JSON.stringify({

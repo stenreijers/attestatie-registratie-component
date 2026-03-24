@@ -83,7 +83,7 @@ export const ProductSchema = z.object({
   taken: z.array(NestedTaakSchema).optional(),
   status: StatusEnum.optional(),
   prijs: z.string().nullable().optional(),
-  frequentie: FrequentieEnum.nullable().optional(),
+  frequentie: z.preprocess(val => val === '' ? undefined : val, FrequentieEnum.nullable().optional()),
   verbruiksobject: z.record(z.string(), z.unknown()).nullable().optional(),
   dataobject: z.record(z.string(), z.unknown()).nullable().optional(),
   aanvraag_zaak_urn: z.string().nullable().optional(),

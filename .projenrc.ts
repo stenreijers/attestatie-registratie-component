@@ -52,4 +52,6 @@ const project = new GemeenteNijmegenTsPackage({
     },
   },
 });
+project.gitignore.exclude('.yarn', '.claude');
+project.package.addField('packageManager', 'yarn@1.22.22');
 project.synth();

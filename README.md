@@ -1,74 +1,86 @@
-# Attestatie Registratie Component
+# Attestatie Registratie Component (ARC)
 
-A component to map products from [Open Product](https://github.com/maykinmedia/open-product) as attestaties into id-wallet, using [ver.id](https://ver.id/) as the id-wallet service provider.
+Herbruikbaar component voor het uitgeven en intrekken van digitale attestaties (verifieerbare credentials) aan burgers, conform het [Common Ground](https://commonground.nl/) model.
 
-## Goal
+## Wat is ARC?
 
-**Primary:** Demonstrate how a municipality can integrate id-wallet attestation.  
-**Secondary:** Provide an installable package integrating Open Product and ver.id to load a product in an id-wallet.
+ARC koppelt databronnen (zoals [Open Product](https://github.com/maykinmedia/open-product)) aan een attestatie-provider (zoals [Ver.ID](https://ver.id/)) om gemeentelijke producten als verifieerbare credentials in een id-wallet te laden.
 
-## Background
+**Voorbeeld:** Een burger op mijn.nijmegen.nl bekijkt zijn standplaatsvergunning en laadt deze in zijn id-wallet. Een handhaver kan de attestatie vervolgens scannen ter verificatie.
 
-Developed by gemeente Nijmegen in collaboration with ver.id and Maykin (Open Product) and [Woweb](https://www.woweb.nl/). Created at the Common Ground Field Labs (January 2024, Utrecht), organized by VNG Realisatie B.V.
+## Architectuur
 
-**Use case:** Citizens on mijn.nijmegen.nl can view their products (e.g., alcohol sales license for vierdaagsefeesten), load them into their id-wallet, and handhavers can scan the attestation for verification.
-
-## Current state
-
-This project is in active development and is definitly not production ready. If you'd like to collaborate or talk about this project, you can find us at the next Common Ground Fieldlab.
-
-## Configuration
-
-- The `VER_ID_GH_TOKEN` environment variable is required as long as the ver.id SDK npm package is not publicly released.
-- By default the component uses a shared secret to verify the JWT token sent by the portal. This can be configured by providing a `jwtSecret` in the options. Alternatively, you can provide a `tokenVerification` instance in the options.
-
-To be added:
-- Authentication token for the open product API
-- Configuration to map open products to attestations
-
-## User Flow
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant MN as mijn.nijmegen.nl
-    participant ARC as Attestatie Registratie Component (ARC)
-    participant VID as ver.id
-    participant Wallet as id-wallet App
-
-    User->>MN: Log in
-    User->>MN: Click 'load product into id-wallet'
-    MN->>MN: Generate JWT with shared secret
-    MN->>ARC: Redirect to /arc/start<br/>(with auth token + product code)
-    ARC->>ARC: Verify JWT signature
-    ARC->>VID: Create attestation 'intent'
-    VID-->>ARC: Intent created
-    ARC->>User: Redirect to ver.id
-    User->>VID: Select id-wallet
-    VID->>User: Display QR code
-    User->>Wallet: Scan QR code
-    Wallet->>VID: Load attestation
-    VID->>User: Redirect to ARC
-    ARC->>User: Redirect to mijn.nijmegen.nl
-    User->>MN: Return to portal
-    MN->>User: Display success/failure feedback message
+```text
+Bron  →  Attestatie (mapping)  →  Provider
+  ↕              ↕                    ↕
+OpenProduct   Standplaatsvergunning  Ver.ID
+              Overlijdensakte        (andere provider)
 ```
 
-To be added:
-- ARC should retrieve the product data from open product
-- ARC should validate the user ownership of the license.
+ARC is opgebouwd uit pluggable abstracties:
 
-## Technical
+- **Source** — Haalt data op uit een extern systeem (bijv. Open Product API)
+- **Attestation** — Vertaalt brondata naar credential-attributen
+- **Provider** — Handelt de daadwerkelijke uitgifte en intrekking af
+- **Store** — Tijdelijke opslag voor sessiestate (bijv. DynamoDB)
 
-Can be deployed as:
-- Docker image with npm package
-- Standalone npm package
-- npm package on AWS Lambda (current implementation)
+Zie [docs/architectuur.md](docs/architectuur.md) voor een volledig overzicht.
 
+## Snel starten
 
+```bash
+npm install @gemeentenijmegen/attestatie-registratie-component
+```
 
+```ts
+import { ARC, OpenProduct, OpenProductStandplaatsvergunning, VerID, DynamoDb } from '@gemeentenijmegen/attestatie-registratie-component';
 
-## Ideas
-- Centrale mapping voor gedeelde attributen
-- Producten (of andere dingen) mappen naar flow uuid
-- Extensible configuratie mechanmise
+const arc = new ARC({
+  provider: new VerID(
+    { issuerUri: '...', redirectUri: '...', clientSecret: '...' },
+    { 'standplaatsvergunning': { flowUuid: '...' } },
+  ),
+  store: new DynamoDb({ tableName: 'arc-sessions' }),
+  sources: [new OpenProduct({ baseUrl: '...', apiToken: '...' })],
+  attestations: [new OpenProductStandplaatsvergunning()],
+});
+
+arc.on('issuance', async (event) => {
+  await mijnDatabase.update(event.sessionId, { status: event.status });
+});
+
+// Attestatie uitgeven
+const { url, sessionId } = await arc.issue({
+  source: 'openproduct', id: 'product-uuid', attestation: 'standplaatsvergunning',
+});
+
+// Status opvragen
+const { status } = await arc.status({ sessionId });
+
+// Intrekken
+await arc.revoke({ sessionId });
+```
+
+## Documentatie
+
+- [Architectuur](docs/architectuur.md) — Hoe ARC werkt
+- [Integratie](docs/integratie.md) — ARC koppelen aan uw applicatie
+- [Een provider toevoegen](docs/adding-a-provider.md) — Nieuwe attestatie-provider implementeren
+- [Een bron toevoegen](docs/adding-a-source.md) — Nieuwe databron aansluiten
+- [Een attestatie toevoegen](docs/adding-an-attestation.md) — Nieuw attestatietype definiëren
+
+## Ontwikkeling
+
+```bash
+npx projen build      # compileren + lint + testen
+npx jest              # alleen testen
+npx tsc --noEmit      # alleen typecheck
+```
+
+## Achtergrond
+
+Ontwikkeld door [Gemeente Nijmegen](https://www.nijmegen.nl/) in samenwerking met [Ver.ID](https://ver.id/) en [Maykin Media](https://www.maykinmedia.nl/) (Open Product). Ontstaan op de Common Ground Field Labs, georganiseerd door [VNG Realisatie](https://vng.nl/artikelen/common-ground).
+
+## Licentie
+
+[EUPL-1.2](LICENSE)

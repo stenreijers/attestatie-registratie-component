@@ -1,11 +1,9 @@
-export * from './attestatie-formatter/AttestatieFormatter';
-export * from './attestation-service/AttestationService';
-export * from './attestation-service/VerIdAttestationService';
-export * from './AttestationRegistrationComponent';
-export * from './AttestationRequest';
-export * from './Conversions';
-export * from './producten/OpenProductApiService';
-export * from './producten/ProductenService';
-export * from './producten/ProductSchema';
-export * from './producten/StaticProductenService';
-
+export * from './core';
+export * from './errors';
+export * from './schemas';
+export * from './sources';
+export * from './attestations';
+export * from './providers';
+export * from './adapters';
+export { ARC } from './ARC';
+export type { ARCOptions } from './ARC';

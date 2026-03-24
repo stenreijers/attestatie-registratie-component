@@ -68,8 +68,8 @@ export class MyProvider extends Provider<MyProviderConfig, MyProviderAttestation
   async webhook(body: Record<string, unknown>): Promise<void> {
     // Process incoming webhook
     // Use this.session to look up callback state
-    // Use this.emitSessionEvent() to notify the consumer
-    await this.emitSessionEvent({
+    // Use this.emitIssuanceEvent() to notify the consumer
+    await this.emitIssuanceEvent({
       sessionId: '...',
       status: 'issued',
       context: { source: '...', id: '...', attestation: '...' },

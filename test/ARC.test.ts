@@ -1,30 +1,29 @@
-import { ARC } from '../src/ARC';
 import { InMemory } from '../src/adapters/InMemory';
+import { ARC } from '../src/ARC';
 import { OpenProductStandplaatsvergunning } from '../src/attestations/openproduct/OpenProductStandplaatsvergunning';
-import { SessionEvent } from '../src/schemas';
+import { IssuanceEvent } from '../src/schemas';
 import { validProduct } from './fixtures/products';
-import { MockSource } from './mocks/MockSource';
 import { MockProvider } from './mocks/MockProvider';
+import { MockSource } from './mocks/MockSource';
 import { Product } from '../src/sources/OpenProduct';
 
 describe('ARC', () => {
   let source: MockSource<Product>;
   let provider: MockProvider;
   let store: InMemory;
-  let sessionEvents: SessionEvent[];
+  let issuanceEvents: IssuanceEvent[];
 
   function createARC() {
-    return new ARC({
+    const arc = new ARC({
       provider,
       store,
       sources: [source],
       attestations: [new OpenProductStandplaatsvergunning()],
-      hooks: {
-        onSessionEvent: async (event) => {
-          sessionEvents.push(event);
-        },
-      },
     });
+    arc.on('issuance', async (event) => {
+      issuanceEvents.push(event);
+    });
+    return arc;
   }
 
   beforeEach(() => {
@@ -32,7 +31,7 @@ describe('ARC', () => {
     source.addData(validProduct.uuid, validProduct);
     provider = new MockProvider();
     store = new InMemory();
-    sessionEvents = [];
+    issuanceEvents = [];
   });
 
   describe('constructor', () => {
@@ -65,7 +64,7 @@ describe('ARC', () => {
       expect(provider.issueCalls[0].payload).toHaveProperty('bsn', '999999333');
     });
 
-    it('should fire onSessionEvent with pending status', async () => {
+    it('should fire issuance event with pending status', async () => {
       const arc = createARC();
 
       await arc.issue({
@@ -74,10 +73,10 @@ describe('ARC', () => {
         attestation: 'standplaatsvergunning',
       });
 
-      expect(sessionEvents).toHaveLength(1);
-      expect(sessionEvents[0].status).toBe('pending');
-      expect(sessionEvents[0].sessionId).toBe('mock-session-id');
-      expect(sessionEvents[0].context).toEqual({
+      expect(issuanceEvents).toHaveLength(1);
+      expect(issuanceEvents[0].status).toBe('pending');
+      expect(issuanceEvents[0].sessionId).toBe('mock-session-id');
+      expect(issuanceEvents[0].context).toEqual({
         source: 'openproduct',
         id: validProduct.uuid,
         attestation: 'standplaatsvergunning',
@@ -121,16 +120,14 @@ describe('ARC', () => {
       })).rejects.toThrow('No attestation for openproduct → unknown');
     });
 
-    it('should not fail if hook throws', async () => {
+    it('should not fail if event handler throws', async () => {
       const arc = new ARC({
         provider,
         store,
         sources: [source],
         attestations: [new OpenProductStandplaatsvergunning()],
-        hooks: {
-          onSessionEvent: async () => { throw new Error('hook failed'); },
-        },
       });
+      arc.on('issuance', async () => { throw new Error('handler failed'); });
 
       const result = await arc.issue({
         source: 'openproduct',
@@ -156,41 +153,13 @@ describe('ARC', () => {
   });
 
   describe('revoke', () => {
-    it('should delegate to provider and fire onSessionEvent', async () => {
+    it('should delegate to provider', async () => {
       const arc = createARC();
 
-      await arc.issue({
-        source: 'openproduct',
-        id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
-      });
-
-      sessionEvents = [];
-
-      const result = await arc.revoke({
-        sessionId: 'mock-session-id',
-        source: 'openproduct',
-        id: validProduct.uuid,
-        attestation: 'standplaatsvergunning',
-      });
+      const result = await arc.revoke({ sessionId: 'mock-session-id' });
 
       expect(result.sessionId).toBe('mock-session-id');
       expect(provider.revokeCalls).toEqual([{ sessionId: 'mock-session-id' }]);
-      expect(sessionEvents).toHaveLength(1);
-      expect(sessionEvents[0].status).toBe('revoked');
-    });
-
-    it('should not fail if store record already expired', async () => {
-      const arc = createARC();
-
-      const result = await arc.revoke({
-        sessionId: 'expired-session',
-        source: 'openproduct',
-        id: '123',
-        attestation: 'standplaatsvergunning',
-      });
-
-      expect(result.sessionId).toBe('expired-session');
     });
   });
 });

@@ -4,7 +4,7 @@ import { Session } from './core/Session';
 import { Source } from './core/Source';
 import { Store } from './core/Store';
 import {
-  ARCHooks,
+  EventHandler, EventMap,
   IssueParams, IssueParamsSchema, IssueResult,
   RevokeParams, RevokeParamsSchema, RevokeResult,
   StatusParams, StatusParamsSchema, StatusResult,
@@ -15,7 +15,6 @@ export interface ARCOptions<TProvider extends Provider<any, any> = Provider> {
   store: Store<any>;
   sources: Source<any, any>[];
   attestations: Attestation[];
-  hooks?: ARCHooks;
 }
 
 export class ARC<TProvider extends Provider<any, any> = Provider> {
@@ -39,10 +38,11 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
       }
     }
 
-    if (options.hooks) {
-      this.provider.setHooks(options.hooks);
-    }
     this.provider.setSession(this.session);
+  }
+
+  on<K extends keyof EventMap>(event: K, handler: EventHandler<EventMap[K]>): void {
+    this.provider.on(event, handler);
   }
 
   async issue(params: IssueParams): Promise<IssueResult> {
@@ -66,17 +66,11 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
       await this.session.saveCallback(providerResult.callbackState, providerResult.sessionId, context);
     }
 
-    if (this.options.hooks?.onSessionEvent) {
-      try {
-        await this.options.hooks.onSessionEvent({
-          sessionId: providerResult.sessionId,
-          status: 'pending',
-          context,
-        });
-      } catch {
-        // Hook failure should not block the issue response
-      }
-    }
+    await this.provider.emit('issuance', {
+      sessionId: providerResult.sessionId,
+      status: 'pending',
+      context,
+    });
 
     return {
       url: providerResult.url,
@@ -93,22 +87,6 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
   async revoke(params: RevokeParams): Promise<RevokeResult> {
     const validated = RevokeParamsSchema.parse(params);
     await this.options.provider.revoke(validated.sessionId);
-    await this.session.delete(validated.sessionId);
-
-    const context = { source: validated.source, id: validated.id, attestation: validated.attestation };
-
-    if (this.options.hooks?.onSessionEvent) {
-      try {
-        await this.options.hooks.onSessionEvent({
-          sessionId: validated.sessionId,
-          status: 'revoked',
-          context,
-        });
-      } catch {
-        // Hook failure should not block the revoke response
-      }
-    }
-
     return { sessionId: validated.sessionId };
   }
 }

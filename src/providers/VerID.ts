@@ -93,21 +93,24 @@ export class VerID extends Provider<VerIDConfig, VerIDAttestationConfig> {
     // const client = this.getClient(attestationConfig.flowUuid);
     // const finalized = await client.finalize({ ... });
 
-    if (success) {
-      await this.emitSessionEvent({
-        sessionId,
-        status: 'issued',
-        context,
-      });
-    }
+    await this.emitIssuanceEvent({
+      sessionId,
+      status: success ? 'issued' : 'aborted',
+      context,
+    });
 
     await this.session.cleanupCallback(state, sessionId);
 
-    return { success, sessionId };
+    return { success, sessionId, context };
   }
 }
 
 export interface VerIDCallbackResult {
   success: boolean;
   sessionId: string;
+  context: {
+    source: string;
+    id: string;
+    attestation: string;
+  };
 }

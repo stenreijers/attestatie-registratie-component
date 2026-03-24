@@ -1,8 +1,8 @@
 import { VeridIssuanceClient } from '@ver-id/node-client';
-import { VerID } from '../../src/providers/VerID';
 import { InMemory } from '../../src/adapters/InMemory';
 import { Session } from '../../src/core/Session';
-import { SessionEvent } from '../../src/schemas';
+import { VerID } from '../../src/providers/VerID';
+import { IssuanceEvent } from '../../src/schemas';
 
 function createMockClient(): VeridIssuanceClient {
   return {
@@ -24,12 +24,12 @@ describe('VerID', () => {
   let provider: VerID;
   let mockClient: VeridIssuanceClient;
   let store: InMemory;
-  let sessionEvents: SessionEvent[];
+  let issuanceEvents: IssuanceEvent[];
 
   beforeEach(() => {
     mockClient = createMockClient();
     store = new InMemory();
-    sessionEvents = [];
+    issuanceEvents = [];
 
     provider = new VerID(
       {
@@ -38,15 +38,13 @@ describe('VerID', () => {
         clientSecret: 'test-secret',
       },
       {
-        'standplaatsvergunning': { flowUuid: 'flow-uuid-standplaats' },
+        standplaatsvergunning: { flowUuid: 'flow-uuid-standplaats' },
       },
       mockClient,
     );
 
     provider.setSession(new Session({ store }));
-    provider.setHooks({
-      onSessionEvent: async (event) => { sessionEvents.push(event); },
-    });
+    provider.on('issuance', async (event) => { issuanceEvents.push(event); });
   });
 
   describe('issue', () => {
@@ -87,29 +85,36 @@ describe('VerID', () => {
       });
     });
 
-    it('should resolve callback state and return success', async () => {
+    it('should resolve callback state and return success with context', async () => {
       const params = new URLSearchParams({ state: 'mock-state', code: 'auth-code' });
       const result = await provider.callback(params);
 
       expect(result.success).toBe(true);
       expect(result.sessionId).toBe('mock-run-uuid');
+      expect(result.context).toEqual({
+        source: 'openproduct',
+        id: 'product-123',
+        attestation: 'standplaatsvergunning',
+      });
     });
 
-    it('should fire onSessionEvent with issued status on success', async () => {
+    it('should emit session event with issued status on success', async () => {
       const params = new URLSearchParams({ state: 'mock-state', code: 'auth-code' });
       await provider.callback(params);
 
-      expect(sessionEvents).toHaveLength(1);
-      expect(sessionEvents[0].status).toBe('issued');
-      expect(sessionEvents[0].context.attestation).toBe('standplaatsvergunning');
+      expect(issuanceEvents).toHaveLength(1);
+      expect(issuanceEvents[0].status).toBe('issued');
+      expect(issuanceEvents[0].context.attestation).toBe('standplaatsvergunning');
     });
 
-    it('should detect error in callback params', async () => {
+    it('should emit session event with aborted status on error', async () => {
       const params = new URLSearchParams({ state: 'mock-state', error: 'access_denied' });
       const result = await provider.callback(params);
 
       expect(result.success).toBe(false);
-      expect(sessionEvents).toHaveLength(0);
+      expect(issuanceEvents).toHaveLength(1);
+      expect(issuanceEvents[0].status).toBe('aborted');
+      expect(issuanceEvents[0].sessionId).toBe('mock-run-uuid');
     });
 
     it('should throw for unknown state', async () => {

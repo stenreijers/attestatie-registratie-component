@@ -1,5 +1,5 @@
-import { Session } from '../../src/core/Session';
 import { InMemory } from '../../src/adapters/InMemory';
+import { Session } from '../../src/core/Session';
 import { standplaatsvergunningContext } from '../fixtures/sessions';
 
 describe('Session', () => {

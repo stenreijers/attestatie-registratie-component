@@ -43,11 +43,10 @@ const arc = new ARC({
   store: new DynamoDb({ tableName: 'arc-sessions' }),
   sources: [new OpenProduct({ baseUrl: '...', apiToken: '...' })],
   attestations: [new OpenProductStandplaatsvergunning()],
-  hooks: {
-    onSessionEvent: async (event) => {
-      await mijnDatabase.update(event.sessionId, { status: event.status });
-    },
-  },
+});
+
+arc.on('issuance', async (event) => {
+  await mijnDatabase.update(event.sessionId, { status: event.status });
 });
 
 // Attestatie uitgeven
@@ -59,7 +58,7 @@ const { url, sessionId } = await arc.issue({
 const { status } = await arc.status({ sessionId });
 
 // Intrekken
-await arc.revoke({ sessionId, source: 'openproduct', id: 'product-uuid', attestation: 'standplaatsvergunning' });
+await arc.revoke({ sessionId });
 ```
 
 ## Documentatie

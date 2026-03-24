@@ -17,7 +17,7 @@ import {
 // --------------------------------------------------------------------------
 
 function createARC() {
-  return new ARC({
+  const arc = new ARC({
     provider: new VerID(
       {
         issuerUri: process.env.VERID_ISSUER_URI!,
@@ -43,23 +43,24 @@ function createARC() {
     attestations: [
       new OpenProductStandplaatsvergunning(),
     ],
-    hooks: {
-      onSessionEvent: async (event) => {
-        // Update your own database with the session state change
-        console.log(`Session ${event.sessionId} → ${event.status}`, event.context);
-
-        // Example: update a "mijn producten" table
-        // await myProductsTable.update({
-        //   sessionId: event.sessionId,
-        //   status: event.status,
-        //   source: event.context.source,
-        //   sourceId: event.context.id,
-        //   attestation: event.context.attestation,
-        //   updatedAt: new Date().toISOString(),
-        // });
-      },
-    },
   });
+
+  arc.on('issuance', async (event) => {
+    // Update your own database with the session state change
+    console.log(`Session ${event.sessionId} → ${event.status}`, event.context);
+
+    // Example: update a "mijn producten" table
+    // await myProductsTable.update({
+    //   sessionId: event.sessionId,
+    //   status: event.status,
+    //   source: event.context.source,
+    //   sourceId: event.context.id,
+    //   attestation: event.context.attestation,
+    //   updatedAt: new Date().toISOString(),
+    // });
+  });
+
+  return arc;
 }
 
 // --------------------------------------------------------------------------
@@ -139,9 +140,6 @@ export async function revokeHandler(event: { body: string }) {
 
   const result = await arc.revoke({
     sessionId: body.sessionId,
-    source: body.source,
-    id: body.id,
-    attestation: body.attestation,
   });
 
   return {

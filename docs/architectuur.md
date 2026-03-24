@@ -35,13 +35,14 @@ Elke abstractie volgt hetzelfde patroon: een abstracte basisklasse met een `opti
 ## Sessielevenscyclus
 
 ```text
-issue()  →  pending  →  callback()  →  issued
-                                    →  (geen callback, TTL verloopt)
-revoke() →  revoked
-provider →  expired (credentials verlopen)
+issue()    →  pending  →  callback()  →  issued
+                                      →  aborted (gebruiker weigert / fout)
+                       →  (geen callback, TTL verloopt)
+revoke()   →  revoked
+provider   →  expired (credentials verlopen)
 ```
 
-Bij elke statusovergang wordt de `onSessionEvent` hook aangeroepen. De consumer (bijv. mijn.nijmegen.nl) gebruikt deze hook om de eigen database bij te werken.
+Bij elke statusovergang in het uitgifteproces wordt een `issuance` event uitgestuurd. De consumer (bijv. mijn.nijmegen.nl) luistert via `arc.on('issuance', handler)` om de eigen database bij te werken.
 
 ## Publieke API
 

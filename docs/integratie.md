@@ -93,17 +93,16 @@ const arc = new ARC({
   store,
   sources,
   attestations,
-  hooks: {
-    onSessionEvent: async (event) => {
-      // event.sessionId — de sessie-ID
-      // event.status — 'pending' | 'issued' | 'revoked' | 'expired'
-      // event.context — { source, id, attestation }
-      await uwDatabase.update(event.sessionId, {
-        status: event.status,
-        bijgewerkt: new Date().toISOString(),
-      });
-    },
-  },
+});
+
+arc.on('issuance', async (event) => {
+  // event.sessionId — de sessie-ID
+  // event.status — 'pending' | 'issued' | 'aborted' | 'revoked' | 'expired'
+  // event.context — { source, id, attestation }
+  await uwDatabase.update(event.sessionId, {
+    status: event.status,
+    bijgewerkt: new Date().toISOString(),
+  });
 });
 ```
 
@@ -153,9 +152,6 @@ const result = await arc.status({ sessionId: request.queryStringParameters.sessi
 const body = JSON.parse(request.body);
 await arc.revoke({
   sessionId: body.sessionId,
-  source: body.source,
-  id: body.id,
-  attestation: body.attestation,
 });
 ```
 

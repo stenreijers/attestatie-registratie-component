@@ -1,4 +1,4 @@
-import { ARCHooks, MappingResult, ProviderIssueResult, SessionStatus, SessionEvent } from '../schemas';
+import { EventHandler, EventMap, IssuanceEvent, MappingResult, ProviderIssueResult, SessionStatus } from '../schemas';
 import { Session } from './Session';
 
 export interface ProviderConfig {}
@@ -17,13 +17,16 @@ export abstract class Provider<
   TConfig extends ProviderConfig = ProviderConfig,
   TAttestation extends AttestationConfig = AttestationConfig,
 > {
-  protected hooks: ARCHooks = {};
+  private listeners: { [K in keyof EventMap]?: EventHandler<EventMap[K]>[] } = {};
   protected session?: Session;
 
   constructor(protected readonly options: ProviderOptions<TConfig, TAttestation>) {}
 
-  setHooks(hooks: ARCHooks): void {
-    this.hooks = hooks;
+  on<K extends keyof EventMap>(event: K, handler: EventHandler<EventMap[K]>): void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event]!.push(handler);
   }
 
   setSession(session: Session): void {
@@ -38,14 +41,21 @@ export abstract class Provider<
     return config;
   }
 
-  protected async emitSessionEvent(event: SessionEvent): Promise<void> {
-    if (this.hooks.onSessionEvent) {
-      try {
-        await this.hooks.onSessionEvent(event);
-      } catch {
-        // Hook failure should not break the provider flow
+  async emit<K extends keyof EventMap>(event: K, data: EventMap[K]): Promise<void> {
+    const handlers = this.listeners[event];
+    if (handlers) {
+      for (const handler of handlers) {
+        try {
+          await handler(data);
+        } catch {
+          // Event handler failure should not break the provider flow
+        }
       }
     }
+  }
+
+  protected async emitIssuanceEvent(event: IssuanceEvent): Promise<void> {
+    await this.emit('issuance', event);
   }
 
   abstract issue(attestationName: string, payload: MappingResult): Promise<ProviderIssueResult>;

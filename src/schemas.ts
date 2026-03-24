@@ -14,9 +14,6 @@ export type StatusParams = z.infer<typeof StatusParamsSchema>;
 
 export const RevokeParamsSchema = z.object({
   sessionId: z.string(),
-  source: z.string(),
-  id: z.string(),
-  attestation: z.string(),
 });
 export type RevokeParams = z.infer<typeof RevokeParamsSchema>;
 
@@ -34,7 +31,7 @@ export type ProviderIssueResult = z.infer<typeof ProviderIssueResultSchema>;
 export const MappingResultSchema = z.record(z.string(), z.unknown());
 export type MappingResult = z.infer<typeof MappingResultSchema>;
 
-export const SessionStatusEnum = z.enum(['pending', 'issued', 'revoked', 'expired']);
+export const SessionStatusEnum = z.enum(['pending', 'issued', 'revoked', 'expired', 'aborted']);
 export type SessionStatus = z.infer<typeof SessionStatusEnum>;
 
 export const StatusResultSchema = z.object({
@@ -48,9 +45,12 @@ export const RevokeResultSchema = z.object({
 });
 export type RevokeResult = z.infer<typeof RevokeResultSchema>;
 
-export interface SessionEvent {
+export const IssuanceStatusEnum = z.enum(['pending', 'issued', 'aborted']);
+export type IssuanceStatus = z.infer<typeof IssuanceStatusEnum>;
+
+export interface IssuanceEvent {
   sessionId: string;
-  status: SessionStatus;
+  status: IssuanceStatus;
   context: {
     source: string;
     id: string;
@@ -58,6 +58,8 @@ export interface SessionEvent {
   };
 }
 
-export interface ARCHooks {
-  onSessionEvent?: (event: SessionEvent) => Promise<void>;
+export interface EventMap {
+  issuance: IssuanceEvent;
 }
+
+export type EventHandler<T> = (event: T) => Promise<void>;

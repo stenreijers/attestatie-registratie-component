@@ -1,6 +1,7 @@
 import * as z from 'zod';
 import { Source, SourceConfig } from '../core/Source';
 import { SourceFetchError, SourceParseError } from '../errors';
+import { IssuanceEvent } from '../schemas.js';
 
 export const StatusEnum = z.enum([
   'initieel',
@@ -12,11 +13,7 @@ export const StatusEnum = z.enum([
   'verlopen',
 ]);
 
-export const FrequentieEnum = z.enum([
-  'eenmalig',
-  'maandelijks',
-  'jaarlijks',
-]);
+export const FrequentieEnum = z.enum(['eenmalig', 'maandelijks', 'jaarlijks']);
 
 export const ToegestaneStatussenEnum = z.enum([
   'initieel',
@@ -30,10 +27,22 @@ export const ToegestaneStatussenEnum = z.enum([
 
 export const EigenaarSchema = z.object({
   uuid: z.uuid(),
-  bsn: z.preprocess(val => val === '' ? undefined : val, z.string().optional()),
-  kvk_nummer: z.preprocess(val => val === '' ? undefined : val, z.string().optional()),
-  vestigingsnummer: z.preprocess(val => val === '' ? undefined : val, z.string().max(24).optional()),
-  klantnummer: z.preprocess(val => val === '' ? undefined : val, z.string().max(50).optional()),
+  bsn: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().optional(),
+  ),
+  kvk_nummer: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().optional(),
+  ),
+  vestigingsnummer: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().max(24).optional(),
+  ),
+  klantnummer: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().max(50).optional(),
+  ),
 });
 
 export const NestedDocumentSchema = z.object({
@@ -83,7 +92,10 @@ export const ProductSchema = z.object({
   taken: z.array(NestedTaakSchema).optional(),
   status: StatusEnum.optional(),
   prijs: z.string().nullable().optional(),
-  frequentie: z.preprocess(val => val === '' ? undefined : val, FrequentieEnum.nullable().optional()),
+  frequentie: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    FrequentieEnum.nullable().optional(),
+  ),
   verbruiksobject: z.record(z.string(), z.unknown()).nullable().optional(),
   dataobject: z.record(z.string(), z.unknown()).nullable().optional(),
   aanvraag_zaak_urn: z.string().nullable().optional(),
@@ -107,27 +119,61 @@ export class OpenProduct extends Source<Product, OpenProductConfig> {
   protected override onInit(): void {
     this.on('issuance', async (event) => {
       if (event.context.source !== this.name) return;
-      await this.updateProduct(event.context.id, event.sessionId);
+      await this.updateProduct(event);
     });
   }
 
-  async updateProduct(id: string, sessionId: string): Promise<void> {
+  async updateProduct(event: IssuanceEvent): Promise<void> {
     // TODO, we have to update this to properly handle the issuance in the openproduct
-    console.dir(`Updating product ${id} with session ID ${sessionId}`);
-    // const url = `${this.options.config.baseUrl}/producten/${id}`;
+    console.dir(
+      `Updating product ${event.context.id} with session ID ${event.sessionId} with status ${event.status}`,
+    );
 
-    // const response = await fetch(url, {
-    //   method: 'PATCH',
-    //   headers: {
-    //     Authorization: `Token ${this.options.config.apiToken}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ dataobject: {sessionId}}),
-    // });
+    // TODO: remove after demo event
+    if (process.env.OPENPRODUCT_WRITE_BACK_FEATURE_FLAG !== 'enabled') {
+      console.warn('OpenProduct write-back is disabled. Skipping update.');
+      return;
+    }
 
-    // if (!response.ok) {
-    //   throw new SourceFetchError(response.status, response.statusText);
-    // }
+    // Fetch the existing product to get the current dataobject
+    const existing = await this.fetch(event.context.id);
+    const existingDataobject = (existing.dataobject ?? {}) as Record<
+      string,
+      unknown
+    >;
+
+    // Patch
+    await this.patch(event.context.id, {
+      dataobject: {
+        ...existingDataobject,
+        issuanceEvents: [
+          ...((existingDataobject.issuanceEvents as unknown[]) ?? []),
+          {
+            sessionId: event.sessionId,
+            status: event.status,
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      },
+    });
+  }
+
+  async patch(id: string, body: Record<string, unknown>): Promise<void> {
+    const url = `${this.options.config.baseUrl}/producten/${id}`;
+
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Token ${this.options.config.apiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!response.ok) {
+      throw new SourceFetchError(response.status, response.statusText);
+    }
   }
 
   async fetch(id: string): Promise<Product> {
@@ -138,6 +184,7 @@ export class OpenProduct extends Source<Product, OpenProductConfig> {
         Authorization: `Token ${this.options.config.apiToken}`,
         Accept: 'application/json',
       },
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!response.ok) {

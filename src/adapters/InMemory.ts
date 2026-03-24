@@ -1,4 +1,5 @@
 import { Store, StoreConfig } from '../core/Store';
+import { StoreExpiredError, StoreNotFoundError } from '../errors';
 
 interface StoredItem {
   payload: Record<string, string>;
@@ -25,11 +26,11 @@ export class InMemory extends Store<InMemoryConfig> {
   async get(id: string): Promise<Record<string, string>> {
     const item = this.data.get(id);
     if (!item) {
-      throw new Error(`Item with id "${id}" not found`);
+      throw new StoreNotFoundError(id);
     }
     if (Date.now() > item.expiresAt) {
       this.data.delete(id);
-      throw new Error(`Item with id "${id}" has expired`);
+      throw new StoreExpiredError(id);
     }
     return item.payload;
   }

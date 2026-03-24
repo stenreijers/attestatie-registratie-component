@@ -1,5 +1,6 @@
 import { ICacheManager, IssuanceIntentPayload, VeridIssuanceClient } from '@ver-id/node-client';
 import { Provider, ProviderConfig, AttestationConfig } from '../core/Provider';
+import { CallbackError, NotImplementedError, ProviderNotInitializedError } from '../errors';
 import { MappingResult, ProviderIssueResult, SessionStatus } from '../schemas';
 
 export interface VerIDConfig extends ProviderConfig {
@@ -66,22 +67,22 @@ export class VerID extends Provider<VerIDConfig, VerIDAttestationConfig> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async status(_sessionId: string): Promise<SessionStatus> {
     // TODO: call Ver.ID API to get issuance run status
-    throw new Error('Status check not yet implemented');
+    throw new NotImplementedError('Status check');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async revoke(_sessionId: string): Promise<void> {
     // TODO: call Ver.ID API to revoke issuance run
-    throw new Error('Revocation not yet implemented');
+    throw new NotImplementedError('Revocation');
   }
 
   async callback(searchParams: URLSearchParams): Promise<VerIDCallbackResult> {
     if (!this.session) {
-      throw new Error('Session not configured — provider must be initialized via ARC');
+      throw new ProviderNotInitializedError();
     }
 
     const state = searchParams.get('state');
-    if (!state) throw new Error('Missing state parameter in callback');
+    if (!state) throw new CallbackError('Missing state parameter in callback');
 
     const { sessionId, context } = await this.session.getCallback(state);
 

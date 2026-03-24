@@ -1,3 +1,4 @@
+import { AttestationNotConfiguredError } from '../errors';
 import { EventHandler, EventMap, IssuanceEvent, MappingResult, ProviderIssueResult, SessionStatus } from '../schemas';
 import { Session } from './Session';
 
@@ -36,7 +37,7 @@ export abstract class Provider<
   protected getAttestationConfig(attestationName: string): TAttestation {
     const config = this.options.attestations[attestationName];
     if (!config) {
-      throw new Error(`No configuration for attestation "${attestationName}"`);
+      throw new AttestationNotConfiguredError(attestationName);
     }
     return config;
   }

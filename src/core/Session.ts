@@ -1,3 +1,4 @@
+import { CallbackStateCorruptError, CallbackStateNotFoundError } from '../errors';
 import { Store } from './Store';
 
 export interface SessionContext {
@@ -52,11 +53,11 @@ export class Session {
     try {
       record = await this.options.store.get(`callback:${state}`);
     } catch {
-      throw new Error(`Unknown or expired callback state: ${state}`);
+      throw new CallbackStateNotFoundError(state);
     }
 
     if (!record.sessionId || !record.attestation) {
-      throw new Error(`Corrupt callback session for state: ${state}`);
+      throw new CallbackStateCorruptError(state);
     }
 
     return {

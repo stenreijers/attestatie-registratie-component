@@ -97,7 +97,7 @@ const arc = new ARC({
 
 arc.on('issuance', async (event) => {
   // event.sessionId — de sessie-ID
-  // event.status — 'pending' | 'issued' | 'aborted' | 'revoked' | 'expired'
+  // event.status — 'pending' | 'issued' | 'aborted'
   // event.context — { source, id, attestation }
   await uwDatabase.update(event.sessionId, {
     status: event.status,

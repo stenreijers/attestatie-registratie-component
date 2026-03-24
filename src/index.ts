@@ -1,4 +1,5 @@
 export * from './core';
+export * from './errors';
 export * from './schemas';
 export * from './sources';
 export * from './attestations';

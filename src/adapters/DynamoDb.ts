@@ -6,6 +6,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Store, StoreConfig } from '../core/Store';
+import { StoreNotFoundError } from '../errors';
 
 export interface DynamoDbConfig extends StoreConfig {
   tableName: string;
@@ -53,7 +54,7 @@ export class DynamoDb extends Store<DynamoDbConfig> {
     }));
 
     if (!response.Item) {
-      throw new Error(`Item with id "${id}" not found`);
+      throw new StoreNotFoundError(id);
     }
 
     const unmarshalled = unmarshall(response.Item) as Record<string, string>;

@@ -3,6 +3,7 @@ import { Provider } from './core/Provider';
 import { Session } from './core/Session';
 import { Source } from './core/Source';
 import { Store } from './core/Store';
+import { ConfigurationError, UnknownAttestationError, UnknownSourceError } from './errors';
 import {
   EventHandler, EventMap,
   IssueParams, IssueParamsSchema, IssueResult,
@@ -34,7 +35,7 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
 
     for (const attestation of options.attestations) {
       if (!this.sourceMap.has(attestation.sourceName)) {
-        throw new Error(`Attestation "${attestation.name}" references unknown source "${attestation.sourceName}"`);
+        throw new ConfigurationError(`Attestation "${attestation.name}" references unknown source "${attestation.sourceName}"`);
       }
     }
 
@@ -49,10 +50,10 @@ export class ARC<TProvider extends Provider<any, any> = Provider> {
     const validated = IssueParamsSchema.parse(params);
 
     const source = this.sourceMap.get(validated.source);
-    if (!source) throw new Error(`Unknown source: ${validated.source}`);
+    if (!source) throw new UnknownSourceError(validated.source);
 
     const attestation = this.attestationMap.get(`${validated.source}:${validated.attestation}`);
-    if (!attestation) throw new Error(`No attestation for ${validated.source} → ${validated.attestation}`);
+    if (!attestation) throw new UnknownAttestationError(validated.source, validated.attestation);
 
     const context = { source: validated.source, id: validated.id, attestation: validated.attestation };
 

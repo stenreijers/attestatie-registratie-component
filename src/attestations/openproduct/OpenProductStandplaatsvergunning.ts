@@ -1,4 +1,5 @@
 import { Attestation } from '../../core/Attestation';
+import { MappingValidationError } from '../../errors';
 import { MappingResult } from '../../schemas';
 import { Product } from '../../sources/OpenProduct';
 
@@ -14,7 +15,7 @@ export class OpenProductStandplaatsvergunning extends Attestation<Product> {
     const locatie = product.dataobject?.location as string ?? 'locatie onbekend';
 
     if (!bsn || !product.uuid) {
-      throw new Error('Invalid product: missing required fields');
+      throw new MappingValidationError('standplaatsvergunning');
     }
 
     return {

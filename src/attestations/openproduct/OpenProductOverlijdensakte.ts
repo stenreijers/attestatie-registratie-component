@@ -1,4 +1,5 @@
 import { Attestation } from '../../core/Attestation';
+import { MappingValidationError } from '../../errors';
 import { MappingResult } from '../../schemas';
 import { Product } from '../../sources/OpenProduct';
 
@@ -11,7 +12,7 @@ export class OpenProductOverlijdensakte extends Attestation<Product> {
     const bsn = product.eigenaren[0]?.bsn;
 
     if (!bsn || !product.uuid) {
-      throw new Error('Invalid product: missing required fields');
+      throw new MappingValidationError('overlijdensakte');
     }
 
     return {};

@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { Source, SourceConfig } from '../core/Source';
+import { SourceFetchError, SourceParseError } from '../errors';
 
 export const StatusEnum = z.enum([
   'initieel',
@@ -114,7 +115,7 @@ export class OpenProduct extends Source<Product, OpenProductConfig> {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch product: ${response.status} ${response.statusText}`);
+      throw new SourceFetchError(response.status, response.statusText);
     }
 
     try {
@@ -122,7 +123,7 @@ export class OpenProduct extends Source<Product, OpenProductConfig> {
       return ProductSchema.parse(data);
     } catch (error) {
       console.error('Failed to parse response', error);
-      throw new Error('Failed to parse product response');
+      throw new SourceParseError(error);
     }
   }
 }

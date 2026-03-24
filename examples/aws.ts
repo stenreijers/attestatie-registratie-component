@@ -9,7 +9,7 @@
  */
 
 import {
-  ARC, OpenProduct, OpenProductStandplaatsvergunning, VerID, DynamoDb,
+  ARC, OpenProduct, OpenProductStandplaatsvergunning, OpenProductOverlijdensakte, VerID, DynamoDb,
 } from '../src';
 
 // --------------------------------------------------------------------------
@@ -28,6 +28,9 @@ function createARC() {
         'standplaatsvergunning': {
           flowUuid: process.env.VERID_FLOW_STANDPLAATSVERGUNNING!,
         },
+        'overlijdensakte': {
+          flowUuid: process.env.VERID_FLOW_OVERLIJDENSAKTE!,
+        },
       },
     ),
     store: new DynamoDb({
@@ -42,6 +45,7 @@ function createARC() {
     ],
     attestations: [
       new OpenProductStandplaatsvergunning(),
+      new OpenProductOverlijdensakte(),
     ],
   });
 

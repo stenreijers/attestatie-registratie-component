@@ -96,7 +96,7 @@ export class AttestatieRegistratieComponent {
   /**
    * Handles the callback from the attestation provider when using a OAuth
    * flow.
-   * 
+   *
    * Note: requested by the user's browser but very likely to not happen as
    * part of the issueance flow (e.g. user exits wallet in same device flow).
    * @param request
@@ -121,9 +121,11 @@ export class AttestatieRegistratieComponent {
     }
 
     return {
-      error, id, type,
+      error,
+      id,
+      type,
       state: request.state,
-    }
+    };
   }
 
 }

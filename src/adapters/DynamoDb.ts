@@ -12,8 +12,6 @@ export interface DynamoDbConfig extends StoreConfig {
   tableName: string;
   partitionKey?: string;
   ttlAttribute?: string;
-  region?: string;
-  endpoint?: string;
 }
 
 export class DynamoDb extends Store<DynamoDbConfig> {
@@ -25,10 +23,7 @@ export class DynamoDb extends Store<DynamoDbConfig> {
     super({ config });
     this.partitionKey = config.partitionKey ?? 'id';
     this.ttlAttribute = config.ttlAttribute ?? 'ttl';
-    this.client = new DynamoDBClient({
-      region: config.region ?? 'eu-west-1',
-      ...(config.endpoint && { endpoint: config.endpoint }),
-    });
+    this.client = new DynamoDBClient();
   }
 
   async put(id: string, payload: Record<string, string>, options?: { ttlSeconds?: number }): Promise<void> {
